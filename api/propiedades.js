@@ -1,45 +1,19 @@
-// api/propiedades.js
-export default async function handler(req, res) {
-  if (req.method === 'OPTIONS') {
-    res.setHeader('Access-Control-Allow-Origin', '*');
-    res.setHeader('Access-Control-Allow-Methods', 'GET,OPTIONS');
-    res.setHeader('Access-Control-Allow-Headers', 'Content-Type');
-    return res.status(204).end();
-  }
+// api/propiedades.js - (Este código se ejecutará en el servidor de Vercel, no en el navegador)
+import fetch from 'node-fetch';
+
+export default async function handler(request, response) {
+  // 1. Obtener la clave API de forma segura (Variable de Entorno de Vercel)
+  const TOKKO_API_KEY = process.env.TOKKO_API_KEY; 
 
   try {
-    let page = 1;
-    let acumulado = [];
-    let seguir = true;
-
-    while (seguir) {
-      const url = `https://tokkobroker.com/api/v1/property/?key=${process.env.TOKKO_API_KEY}&format=json&page=${page}`;
-      
-      const r = await fetch(url);
-
-      if (!r.ok) {
-        console.log("Tokko error en página:", page, await r.text());
-        break;
-      }
-
-      const data = await r.json();
-      const objetos = data.objects || [];
-
-      if (objetos.length === 0) {
-        seguir = false;
-        break;
-      }
-
-      acumulado = [...acumulado, ...objetos];
-      page++;
-    }
-
-    res.setHeader('Access-Control-Allow-Origin', '*');
-    res.status(200).json(acumulado);
-
-  } catch (err) {
-    console.log("ERROR BACKEND:", err);
-    res.setHeader('Access-Control-Allow-Origin', '*');
-    res.status(500).json({ error: 'Error al conectar con Tokko' });
+    // 2. Llamar a la API de Tokko Broker
+    const tokkoResponse = await fetch(`https://api.tokkobroker.com/rest/v1/property/?key=${TOKKO_API_KEY}&limit=10`);
+    
+    // 3. Procesar y devolver los datos
+    const data = await tokkoResponse.json();
+    response.status(200).json(data);
+  } catch (error) {
+    console.error(error);
+    response.status(500).json({ error: 'Fallo al obtener propiedades' });
   }
 }
