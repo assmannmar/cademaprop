@@ -1,6 +1,6 @@
 <script>
 async function loadProperties() {
-  const res = await fetch('/api/propiedades.js');
+  const res = await fetch('./api/propiedades.js');
   const data = await res.json();
   console.log(data); // acá ya tenés los datos
 }
