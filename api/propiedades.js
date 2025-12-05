@@ -14,13 +14,18 @@ export default async function handler(req, res) {
 
     while (seguir) {
       const url = `https://tokkobroker.com/api/v1/property/?key=${process.env.TOKKO_API_KEY}&format=json&page=${page}`;
-
+      
       const r = await fetch(url);
-      const data = await r.json();
 
+      if (!r.ok) {
+        console.log("Tokko error en página:", page, await r.text());
+        break;
+      }
+
+      const data = await r.json();
       const objetos = data.objects || [];
 
-      if (!Array.isArray(objetos) || objetos.length === 0) {
+      if (objetos.length === 0) {
         seguir = false;
         break;
       }
@@ -33,7 +38,8 @@ export default async function handler(req, res) {
     res.status(200).json(acumulado);
 
   } catch (err) {
-    console.error(err);
+    console.log("ERROR BACKEND:", err);
+    res.setHeader('Access-Control-Allow-Origin', '*');
     res.status(500).json({ error: 'Error al conectar con Tokko' });
   }
 }
